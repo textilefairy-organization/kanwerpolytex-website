@@ -1,71 +1,80 @@
-'use client' // Declare this as a Client Component to safely use hooks like usePrefersDark (Next.js best practice).
+// src/app/layout.tsx (Server Component)
 
-/**
- * RootLayout
- *
- * Overview:
- * - Top-level application layout that applies a Material UI theme based on the user's
- *   system preference (dark or light), using a robust client-side hook.
- * - Keeps SSR output deterministic and handles client preference changes after hydration.
- *
- * Author: Praveen Kanwar
- * Organization: Kanwer Polytex
- *
- * Documentation and Practices:
- * - OWASP:
- *   - Avoids unsafe inline scripts and event handlers.
- *   - No dynamic code evaluation (eval) or string-to-code conversions.
- *   - Limits browser-only API usage to client components to prevent SSR errors.
- * - SonarQube:
- *   - Explicit typing and clear separation of concerns.
- *   - Avoids redundant variables and ensures proper resource cleanup (handled by hook).
- * - Next.js Best Practices:
- *   - Client-only behavior isolated behind 'use client'.
- *   - Deterministic SSR markup; prefers-light default on server, then updates on a client.
- *   - Optional suppressHydrationWarning used to prevent false-positive hydration warnings
- *     when the theme flips immediately on the client.
- */
+// src/app/layout.tsx (Server Component)
+//
+// Overview:
+// - Root HTML structure for all routes in the App Router.
+// - Reads per-request CSP nonce from headers and exposes it for CSS-in-JS.
+// - Wraps pages with a theme provider respecting SSR hydration and user preference.
+//
+// Security & Quality (OWASP, SonarQube, Next.js):
+// - Uses per-request CSP nonce to avoid 'unsafe-inline' styles (reduces XSS risk).
+// - Avoids inline scripts and event handlers.
+// - Minimal global CSS; prefer component-scoped styling.
+// - Strong typing and readonly props for maintainability.
+// - Head mutations kept minimal; prefer Metadata/Viewport APIs.
+//
+// Author: Praveen Kanwar
+// Organization: Kanwer Polytex
+// Documentation:
+//   - Next App Router Layouts: https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts
+//   - CSP: https://developer.mozilla.org/docs/Web/HTTP/CSP
+//   - Emotion Nonce: https://emotion.sh/docs/ssr
+//   - OWASP XSS: https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
 
-import React, {useMemo} from 'react' // Import React for JSX and useMemo for efficient memoization.
-// Material UI ThemeProvider to supply theme context to the app tree.
-import {ThemeProvider} from '@mui/material/styles'
-// Material UI CssBaseline to apply a consistent, sensible CSS reset across browsers.
-import CssBaseline from '@mui/material/CssBaseline'
-// Application theme objects for light and dark modes (preconfigured separately).
-import {darkTheme, lightTheme} from '@/web/theme/muiTheme'
-// Hook that reports whether the user's system prefers dark mode (client-safe).
-import {usePrefersDark} from '@/web/theme/usePrefersDark'
+import type {ReactNode} from 'react' // Children typing
+import React from 'react' // Enable JSX and types
+import {headers} from 'next/headers' // Server-side request headers accessor
+import type {Metadata, Viewport} from 'next' // Metadata + Viewport APIs
+import ThemeProviderClient from '@/web/theme/ThemeProviderClient' // MUI + Emotion provider
+import './globals.css' // Minimal global CSS (resets, variables, fonts)
 
-// Define a prop type for the layout children for clarity and type safety.
-type RootLayoutProps = {
-    children: React.ReactNode // React nodes that will be rendered inside the themed layout.
+// Provide default metadata (title/description).
+export const metadata: Metadata = {
+    title: {
+        default: 'Kanwer Polytex',
+        template: '%s | Kanwer Polytex',
+    },
+    description:
+        'Kanwer Polytex — Quality, sustainability, and innovation in polytex solutions.',
+}
+// Provide a viewport via the new dedicated API (Next.js recommendation).
+export const viewport: Viewport = {
+    width: 'device-width', // Responsive layout baseline
+    initialScale: 1, // Prevent unexpected zoom on load
+    viewportFit: 'cover', // Better support on notched devices
+    colorScheme: 'light dark', // Hint UA for supported color schemes
 }
 
-// Export the default layout component to wrap the entire application.
-export default function RootLayout({children}: RootLayoutProps) {
-    // Read the user's system preference (true => dark, false => light).
-    // The hook is SSR-safe and returns a deterministic default on the server.
-    const prefersDark = usePrefersDark()
+// Strongly typed, readonly props for clarity and immutability.
+type RootLayoutProps = Readonly<{
+    children: ReactNode
+}>
 
-    // Memoize the selected theme so it only recalculates when the preference changes.
-    // This avoids unnecessary re-renders of components consuming the theme.
-    const theme = useMemo(() => (prefersDark ? darkTheme : lightTheme), [prefersDark])
+// Server Component — use async to support environments where headers() returns a Promise.
+export default async function RootLayout({children}: RootLayoutProps): Promise<React.ReactElement> {
+    // Await per-request headers to avoid "Property 'get' does not exist on type Promise<ReadonlyHeaders>"
+    const readOnlyHeaders = await headers()
 
-    // Return the root HTML structure. In the App Router, this layout wraps every page.
+    // Extract CSP nonce from middleware; treat empty as undefined.
+    const rawNonce = readOnlyHeaders.get('x-csp-nonce')
+    const nonce: string | undefined =
+        typeof rawNonce === 'string' && rawNonce.trim().length > 0 ? rawNonce : undefined
+
+    // Global HTML structure:
+    // - lang/dir for accessibility and correct rendering.
+    // - suppressHydrationWarning helps when the client theme might differ slightly on hydration.
     return (
-        // Set the language attribute for accessibility and SEO; suppress hydration warnings
-        // because the theme (and therefore CSS) may differ between server and client.
-        <html lang="en" suppressHydrationWarning>
-        {/* The document body contains the themed application tree. */}
-        {/* data-theme attribute can help CSS or tooling distinguish the current theme (non-sensitive). */}
-        <body data-theme={prefersDark ? 'dark' : 'light'}>
-        {/* Provide the selected MUI theme to all descendants via React Context. */}
-        <ThemeProvider theme={theme}>
-            {/* Apply Material UI's CSS baseline for consistent cross-browser rendering. */}
-            <CssBaseline/>
-            {/* Render child routes/pages inside the themed provider. */}
-            {children}
-        </ThemeProvider>
+        <html lang="en" dir="ltr" suppressHydrationWarning>
+        <head>
+            {/* Expose CSP nonce for libraries (e.g., Emotion) that read it from DOM */}
+            {nonce ? <meta name="csp-nonce" content={nonce}/> : null}
+            {/* Keep <head> minimal; prefer Metadata/Viewport APIs or route-level metadata. */}
+            <title></title>
+        </head>
+        <body data-theme="light">
+        {/* Pass CSP nonce to client-side ThemeProvider so Emotion/MUI can attach it to style tags */}
+        <ThemeProviderClient nonce={nonce}>{children}</ThemeProviderClient>
         </body>
         </html>
     )

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  File: public/sitemap.xml
+  Purpose: XML Sitemap for search engines to efficiently discover and crawl site URLs.
+
+  Author: Praveen Kanwar
+  Organization: Kanwer Polytex
+
+  Best Practices:
+  - OWASP: Do not list sensitive or non-public URLs; only include publicly accessible pages.
+  - SonarQube: Maintain a consistent structure, avoid duplication, and keep metadata accurate.
+  - Next.js: Update lastmod when content changes; automate generation if you have many dynamic pages.
+
+  Notes:
+  - lastmod uses ISO 8601 (YYYY-MM-DD). Include time (YYYY-MM-DDThh:mm:ss+00:00) if you can track precise updates.
+  - change frequency and priority are hints; search engines may ignore them, but they remain useful metadata.
+  - Keep all <loc> values canonical and absolute.
+-->
+
+<!-- xml root: declares sitemap protocol namespace -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <!-- Home page: primary entry point -->
+    <url>
+        <!-- Canonical absolute URL -->
+        <loc>https://kanwerpolytex.com/</loc>
+        <!-- Date the content was last updated -->
+        <lastmod>2025-09-24</lastmod>
+        <!-- Expected update frequency -->
+        <changefreq>daily</changefreq>
+        <!-- Highest relative importance -->
+        <priority>1.00</priority>
+    </url>
+
+    <!-- About page: company overview and static information -->
+    <url>
+        <loc>https://kanwerpolytex.com/about</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+    <!-- Products listing: catalog overview -->
+    <url>
+        <loc>https://kanwerpolytex.com/products</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.90</priority>
+    </url>
+
+    <!-- Product category: Polyester Filament -->
+    <url>
+        <loc>https://kanwerpolytex.com/products/polyester-filament</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+    <!-- Product category: Polyester Spun -->
+    <url>
+        <loc>https://kanwerpolytex.com/products/polyester-spun</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+    <!-- Product category: Nylon Filament -->
+    <url>
+        <loc>https://kanwerpolytex.com/products/nylon-filament</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+    <!-- Services overview -->
+    <url>
+        <loc>https://kanwerpolytex.com/services</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.70</priority>
+    </url>
+
+    <!-- Capabilities: machinery, processes, quality standards -->
+    <url>
+        <loc>https://kanwerpolytex.com/capabilities</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.70</priority>
+    </url>
+
+    <!-- Batch sizes: MOQs and production runs -->
+    <url>
+        <loc>https://kanwerpolytex.com/batch-sizes</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.60</priority>
+    </url>
+
+    <!-- Contact page: communication and location -->
+    <url>
+        <loc>https://kanwerpolytex.com/contact</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- Privacy policy: legal compliance -->
+    <url>
+        <loc>https://kanwerpolytex.com/privacy-policy</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.10</priority>
+    </url>
+
+    <!-- Terms and conditions: legal compliance -->
+    <url>
+        <loc>https://kanwerpolytex.com/terms</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.10</priority>
+    </url>
+
+    <!-- Blog index: if present, typically updated regularly -->
+    <url>
+        <loc>https://kanwerpolytex.com/blog</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.65</priority>
+    </url>
+
+    <!-- Careers page: hiring information -->
+    <url>
+        <loc>https://kanwerpolytex.com/careers</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.30</priority>
+    </url>
+
+    <!-- Example product detail page: include real products as they are published -->
+    <url>
+        <loc>https://kanwerpolytex.com/products/nylon-fdy-210-0</loc>
+        <lastmod>2025-09-24</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.60</priority>
+    </url>
+</urlset>

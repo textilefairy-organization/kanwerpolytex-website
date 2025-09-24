@@ -1,0 +1,51 @@
+# robots.txt for https://kanwerpolytex.com
+# Author: Praveen Kanwar
+# Organization: Kanwer Polytex
+# Last updated: 2025-09-24
+#
+# Documentation and Intent:
+# - Purpose: Allow indexing of public pages and static assets, while disallowing private or server-only routes.
+# - OWASP: Avoid exposing administrative or internal endpoints to crawlers to reduce discovery/attack surface.
+# - SonarQube: Keep rules concise and intentional; document each directive for maintainability.
+# - Next.js Best Practices: Allow _next/static and _next/image so crawlers can fetch assets needed for rendering.
+# - Place this file at /public so it is served at https://kanwerpolytex.com/robots.txt
+
+
+# Default policy for all crawlers
+User-agent: *
+# Allow everything by default (whitelist-first approach for Next.js static assets and pages)
+Allow: /
+# Explicitly allow Next.js build outputs used for rendering (CSS, JS, images). Blocking these can harm indexing quality.
+Allow: /_next/static/
+Allow: /_next/image/
+Allow: /_next/static/chunks/
+
+# Disallow sensitive, server-only, or private endpoints (reduce exposure of non-content routes)
+Disallow: /api/
+Disallow: /admin/
+Disallow: /server/
+Disallow: /private/
+Disallow: /internal/
+Disallow: /checkout/
+Disallow: /cart/
+
+# Optional: discourage crawling of unhelpful artifacts (source maps/logs) to save crawl budget
+# Note: Some crawlers may ignore these, but they are harmless and self-documenting.
+Disallow: /*.map$
+Disallow: /*.log$
+
+# Sitemap helps crawlers discover canonical URLs efficiently
+Sitemap: https://kanwerpolytex.com/sitemap.xml
+
+# Host is non-standard but some crawlers respect it
+Host: kanwerpolytex.com
+
+# Google-specific tweaks (optional)
+User-agent: Googlebot
+Allow: /_next/static/
+Allow: /_next/image/
+Crawl-delay: 1
+
+# If you have a staging environment, add separate robots file there that disallows all:
+#   User-agent: *
+#   Disallow: /

@@ -1,0 +1,32 @@
+{
+  "name": "Kanwer Polytex — Nylon & Polyester Yarn Dyeing",
+  "short_name": "Kanwer Polytex",
+  "description": "Kanwer Polytex — Specialists in Nylon & Polyester FDY/HDY yarn. Export-grade quality from Bhiwandi, Thane.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "theme_color": "#0086C1",
+  "background_color": "#F8FAFC",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "dir": "ltr",
+  "lang": "en-IN",
+  "shortcuts": []
+}
