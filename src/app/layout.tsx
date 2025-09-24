@@ -63,15 +63,14 @@ export default async function RootLayout({children}: RootLayoutProps): Promise<R
     // - lang/dir for accessibility and correct rendering.
     // - suppressHydrationWarning helps when the client theme might differ slightly on hydration.
     return (
-
         <html lang="en" dir="ltr" suppressHydrationWarning>
         <head>
+            <title>Kanwer Polytex</title>
             {/* Expose CSP nonce for libraries (e.g., Emotion) that read it from DOM */}
             {nonce ? <meta name="csp-nonce" content={nonce}/> : null}
             {/* Keep <head> minimal; prefer Metadata/Viewport APIs or route-level metadata. */}
-            <title></title>
         </head>
-        <body data-theme="light">
+        <body>
         {/* Pass CSP nonce to client-side ThemeProvider so Emotion/MUI can attach it to style tags */}
         <ThemeProviderClient nonce={nonce}>
             {children}
