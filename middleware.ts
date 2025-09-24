@@ -92,8 +92,8 @@ function buildCSP(nonce: string): string {
         // Fallback for unspecified resource types
         `default-src 'self'`,
 
-        // Scripts: allow only self and explicitly trusted sources
-        `script-src ${ALLOWED_SCRIPT_HOSTS.join(' ')}`,
+        // Scripts: allow self, any allowed script hosts, and the per-request nonce
+        `script-src ${ALLOWED_SCRIPT_HOSTS.join(' ')} 'nonce-${nonce}'`,
 
         // Styles: allow self + nonce; include font stylesheet host if used
         `style-src ${ALLOWED_STYLE_HOSTS.join(' ')} 'nonce-${nonce}'`,
