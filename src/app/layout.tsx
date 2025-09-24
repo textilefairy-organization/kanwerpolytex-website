@@ -50,6 +50,22 @@ type RootLayoutProps = Readonly<{
     children: ReactNode
 }>
 
+// Inline theme bootstrap: set data-theme on first paint using system preference
+function inlineThemeScript() {
+    return `
+    (function() {
+      try {
+        var mql = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+        var systemPrefersDark = mql ? mql.matches : false;
+        var theme = systemPrefersDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        // no-op
+      }
+    })();
+  `;
+}
+
 // Server Component — use async to support environments where headers() returns a Promise.
 export default async function RootLayout({children}: RootLayoutProps): Promise<React.ReactElement> {
     // Await per-request headers to avoid "Property 'get' does not exist on type Promise<ReadonlyHeaders>"
@@ -68,6 +84,13 @@ export default async function RootLayout({children}: RootLayoutProps): Promise<R
             <title>Kanwer Polytex</title>
             {/* Expose CSP nonce for libraries (e.g., Emotion) that read it from DOM */}
             {nonce ? <meta name="csp-nonce" content={nonce}/> : null}
+            {/* Early theme hint to avoid FOUC and honor system preference on first paint */}
+            {nonce ? (
+                <script
+                    nonce={nonce}
+                    dangerouslySetInnerHTML={{__html: inlineThemeScript()}}
+                />
+            ) : null}
             {/* Keep <head> minimal; prefer Metadata/Viewport APIs or route-level metadata. */}
         </head>
         <body>
