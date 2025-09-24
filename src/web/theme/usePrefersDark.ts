@@ -33,6 +33,13 @@ import {useSyncExternalStore} from 'react' // Import the stable external store s
 // MEDIA_QUERY: string constant for the dark-mode preference query (stable reference)
 const MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
+// Read the DOM-bootstrapped theme if present to avoid any flicker/mismatch
+function readBootstrappedTheme(): 'dark' | 'light' | undefined {
+    if (typeof document === 'undefined') return undefined
+    const attr = document.documentElement.getAttribute('data-theme')
+    return attr === 'dark' || attr === 'light' ? attr : undefined
+}
+
 /**
  * getSnapshot
  * - Reads the current value (boolean) of whether the system prefers dark mode on the client.
@@ -45,14 +52,13 @@ function getSnapshot(): boolean {
         return false
     }
 
-    // Verify that matchMedia exists (older or non-standard environments may not support it).
-    if (typeof window.matchMedia !== 'function') {
-        // If unsupported, choose a conservative default (light).
-        return false
-    }
+    const boot = readBootstrappedTheme()
+    if (boot) return boot === 'dark'
 
-    // Query the current media status for dark-mode preference and return the boolean result.
-    return window.matchMedia(MEDIA_QUERY).matches
+    if (typeof window.matchMedia === 'function') {
+        return window.matchMedia(MEDIA_QUERY).matches
+    }
+    return false
 }
 
 /**

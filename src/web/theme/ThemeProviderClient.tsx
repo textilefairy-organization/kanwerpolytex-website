@@ -87,6 +87,19 @@ export default function ThemeProviderClient({children, nonce}: Props) {
     const prefersDark = usePrefersDark()
     const theme = React.useMemo(() => (prefersDark ? darkTheme : lightTheme), [prefersDark])
 
+    // Keep <html data-theme = "..."> in sync with the active theme (works even if an inline script was missing)
+    React.useEffect(() => {
+        const next = prefersDark ? 'dark' : 'light'
+        try {
+            document.documentElement.setAttribute('data-theme', next)
+            // Optional persistence (uncomment if you want to remember user choice later):
+            // localStorage.setItem('kp_theme', next)
+            // document.cookie = `kp_theme=${next}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`
+        } catch {
+            /* no-op */
+        }
+    }, [prefersDark])
+
     return (
         <CacheProvider value={cache}>
             <ThemeProvider theme={theme}>
