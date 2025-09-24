@@ -27,7 +27,6 @@ import React from 'react' // Enable JSX and types
 import {headers} from 'next/headers' // Server-side request headers accessor
 import type {Metadata, Viewport} from 'next' // Metadata + Viewport APIs
 import ThemeProviderClient from '@/web/theme/ThemeProviderClient' // MUI + Emotion provider
-import './globals.css' // Minimal global CSS (resets, variables, fonts)
 
 // Provide default metadata (title/description).
 export const metadata: Metadata = {
