@@ -22,58 +22,38 @@ type ThemeRegistryProps = {
 export default function ThemeRegistry({children, options = {}}: ThemeRegistryProps) {
     const key = options.key ?? 'mui';
 
-    const [{cache, flush}] = React.useState(() => {
+    const insertedRef = React.useRef<string[]>([]);
+
+    const {cache, flush} = React.useMemo(() => {
         const cache: EmotionCache = createCache({
             key,
             prepend: true,
             nonce: options.nonce,
         });
 
-        // Capture exact insert signature from a cache
         type InsertFn = typeof cache.insert;
-        type InsertArgs = Parameters<InsertFn>;
-        type InsertReturn = ReturnType<InsertFn>;
-
         const prevInsert: InsertFn = cache.insert;
 
-        // Use a ref to hold inserted names so linter/TS sees both writes and reads.
-        const insertedRef = {current: [] as string[]};
-
-        const wrappedInsert = function (
-            selector: InsertArgs[0],
-            serialized: InsertArgs[1],
-            sheet?: InsertArgs[2],
-            shouldCache?: InsertArgs[3]
-        ): InsertReturn {
-            // cache.inserted maps name -> CSS string | undefined
+        cache.insert = ((selector, serialized, sheet, shouldCache) => {
             const insertedMap = cache.inserted as Record<string, string | undefined>;
             if (insertedMap[serialized.name] === undefined) {
                 insertedRef.current.push(serialized.name);
             }
-
-            const safeShouldCache: boolean = !!shouldCache;
-
-            return prevInsert.call(
-                cache,
-                selector,
-                serialized,
-                sheet as Parameters<typeof cache.insert>[2],
-                safeShouldCache
-            );
-        };
-
-        cache.insert = wrappedInsert as InsertFn;
+            return prevInsert.call(cache, selector, serialized, sheet, shouldCache ?? false);
+        }) as InsertFn;
 
         const flush = () => {
-            const prev = insertedRef.current;
-            // Keep global styles like 'mui-global' so they aren’t re-inserted on a client
-            const filtered = prev.filter(name => !name.startsWith('mui-global'));
+            // Only keep global or theme-level styles.
+            // After (allow global + theme-level, skip component classes)
+            const filtered = insertedRef.current.filter(
+                name => name.startsWith('mui-global') || name.startsWith('mui-style')
+            );
             insertedRef.current = [];
             return filtered;
         };
 
         return {cache, flush};
-    });
+    }, [key, options.nonce]);
 
     useServerInsertedHTML(() => {
         const names = flush();
@@ -82,19 +62,19 @@ export default function ThemeRegistry({children, options = {}}: ThemeRegistryPro
         }
 
         const insertedMap = cache.inserted as Record<string, string | undefined>;
-        let styles = '';
-        for (const name of names) {
-            const css = insertedMap[name];
-            if (css) styles += css;
-        }
+        const styles = names
+            .map(name => insertedMap[name])
+            .filter((s): s is string => Boolean(s))
+            .join('');
 
-        return (
+        return styles ? (
             <style
                 key={cache.key}
                 data-emotion={`${cache.key} ${names.join(' ')}`}
+                nonce={options?.nonce}
                 dangerouslySetInnerHTML={{__html: styles}}
             />
-        );
+        ) : null;
     });
 
     return <CacheProvider value={cache}>{children}</CacheProvider>;

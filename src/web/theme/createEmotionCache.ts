@@ -64,7 +64,7 @@ export default function createEmotionCache(nonce?: string): EmotionCache {
         prepend: true,
         insertionPoint:
             typeof document !== 'undefined'
-                ? document.querySelector<HTMLMetaElement>('meta[name="emotion-insertion-point"]') ?? undefined
+                ? (document.querySelector('meta[name="emotion-insertion-point"]') as HTMLElement | null) ?? undefined
                 : undefined,
     })
 }

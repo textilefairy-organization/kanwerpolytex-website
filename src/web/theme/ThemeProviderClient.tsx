@@ -5,6 +5,7 @@ import React from 'react'
 import {ThemeProvider} from '@mui/material/styles'
 import {darkTheme, lightTheme} from '@/web/theme/muiTheme'
 import {usePrefersDark} from '@/web/theme/usePrefersDark'
+import {CssBaseline} from "@mui/material";
 
 /**
  * File: src/web/theme/ThemeProviderClient.tsx
@@ -32,11 +33,15 @@ export default function ThemeProviderClient({children}: Props) {
 
     // Detect system preference (dark/light) and memoize the theme to avoid unnecessary re-renders
     const prefersDark = usePrefersDark()
-    const theme = React.useMemo(() => (prefersDark ? darkTheme : lightTheme), [prefersDark])
+    const [mounted, setMounted] = React.useState(false)
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+    const theme = React.useMemo(() => (mounted && prefersDark ? darkTheme : lightTheme), [mounted, prefersDark])
 
     return (
         <ThemeProvider theme={theme}>
-            {/* <CssBaseline enableColorScheme /> */}
+            <CssBaseline enableColorScheme/>
             {children}
         </ThemeProvider>
     )

@@ -33,6 +33,14 @@ import {useSyncExternalStore} from 'react' // Import the stable external store s
 // MEDIA_QUERY: string constant for the dark-mode preference query (stable reference)
 const MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
+// --- ADD THIS: legacy interface to avoid deprecation warnings while keeping typesafe ---
+interface LegacyMediaQueryList extends MediaQueryList {
+    // The legacy APIs are marked deprecated in lib.dom.d.ts but still exist in older browsers (Safari).
+    addListener(listener: (this: MediaQueryList, ev: MediaQueryListEvent) => void): void
+
+    removeListener(listener: (this: MediaQueryList, ev: MediaQueryListEvent) => void): void
+}
+
 /**
  * getSnapshot
  * - Reads the current value (boolean) of whether the system prefers dark mode on the client.
@@ -40,13 +48,9 @@ const MEDIA_QUERY = '(prefers-color-scheme: dark)'
  */
 function getSnapshot(): boolean {
     // Ensure this only runs in a browser environment; SSR has no window.
-    if (typeof window === 'undefined') {
-        // Returning false on the server ensures deterministic markup (avoids hydration mismatch).
-        return false
-    }
-
     // Verify that matchMedia exists (older or non-standard environments may not support it).
-    if (typeof window.matchMedia !== 'function') {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+        // Returning false on the server ensures deterministic markup (avoids hydration mismatch).
         // If unsupported, choose a conservative default (light).
         return false
     }
@@ -81,13 +85,12 @@ function subscribe(onStoreChange: () => void): () => void {
     }
 
     // Create the MediaQueryList instance for the dark-mode query.
-    const mql: MediaQueryList = window.matchMedia(MEDIA_QUERY)
+    // Keep a typed alias for legacy APIs but keep the runtime object as the browser provides it.
+    const mql = window.matchMedia(MEDIA_QUERY)
+    const legacyMql = mql as LegacyMediaQueryList
 
     // Define a simple handler that triggers React to re-read the snapshot.
-    // We do not rely on event payload to minimize coupling with specific event shapes.
-    const handler = () => {
-        onStoreChange()
-    }
+    const handler = () => onStoreChange()
 
     // Prefer modern addEventListener/removeEventListener when available (standards-compliant browsers).
     const hasModernAPI =
@@ -105,11 +108,11 @@ function subscribe(onStoreChange: () => void): () => void {
     // Using feature detection avoids reliance on exceptions for control flow (SonarQube-friendly).
     // These methods are deprecated but still necessary for compatibility.
     // eslint comments are avoided to prevent unknown rule errors.
-    ;(mql as unknown as { addListener: (cb: () => void) => void }).addListener(handler)
+    legacyMql.addListener(handler)
 
     // Return a cleanup function using the corresponding legacy removal API.
     return () => {
-        ;(mql as unknown as { removeListener: (cb: () => void) => void }).removeListener(handler)
+        legacyMql.removeListener(handler)
     }
 }
 

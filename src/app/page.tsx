@@ -47,7 +47,6 @@ export default function Page() {
         // Container marks the main content region; semantic and accessible.
         <Container
             component="main" // Semantic "main" landmark for accessibility
-            role="main" // Reinforces landmark for assistive tech
             maxWidth="md" // Constrains line length for readability
             sx={{
                 minHeight: '100vh', // Full viewport height for vertical centering
@@ -85,12 +84,11 @@ export default function Page() {
 
                     {/* Internal navigation uses Next.js Link for client-side transitions and better UX. */}
                     <Button
-                        variant="outlined" // Medium-emphasis button
-                        color="primary" // Consistent theming
-                        component={Link} // Render Button as Next.js Link
-                        href="/about" // Internal route path
-                        aria-label="Learn more about Kanwer Polytex" // Accessible label describing destination
-                    >
+                        LinkComponent={Link} // MUI v5+ way to integrate Next.js Link
+                        href="/about"
+                        variant="outlined"
+                        color="primary"
+                        aria-label="Learn more about Kanwer Polytex">
                         About Us
                     </Button>
                 </Box>

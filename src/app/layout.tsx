@@ -58,8 +58,7 @@ export default async function RootLayout({children}: RootLayoutProps): Promise<R
 
     // Extract CSP nonce from middleware; treat empty as undefined.
     const rawNonce = readOnlyHeaders.get('x-csp-nonce')
-    const nonce: string | undefined =
-        typeof rawNonce === 'string' && rawNonce.trim().length > 0 ? rawNonce : undefined
+    const nonce: string | undefined = typeof rawNonce === 'string' && rawNonce.trim().length > 0 ? rawNonce : undefined
 
     // Global HTML structure:
     // - lang/dir for accessibility and correct rendering.
@@ -70,9 +69,9 @@ export default async function RootLayout({children}: RootLayoutProps): Promise<R
             {/* CSP nonce for Emotion/MUI */}
             {nonce ? <meta name="csp-nonce" content={nonce} /> : null}
             {/* Stable insertion point for Emotion CSS */}
-            <meta name="emotion-insertion-point" content="emotion-insertion-point" />
+            <meta name="emotion-insertion-point" content="" />
         </head>
-        <body data-theme="light" suppressHydrationWarning>
+        <body suppressHydrationWarning>
         <ThemeRegistry options={{key: 'mui', nonce}}>
             <ThemeProviderClient>{children}</ThemeProviderClient>
         </ThemeRegistry>
