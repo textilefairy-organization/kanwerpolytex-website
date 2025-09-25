@@ -26,6 +26,7 @@ import type {ReactNode} from 'react' // Children typing
 import React from 'react' // Enable JSX and types
 import {headers} from 'next/headers' // Server-side request headers accessor
 import type {Metadata, Viewport} from 'next' // Metadata + Viewport APIs
+import ThemeRegistry from '@/app/ThemeRegistry';
 import ThemeProviderClient from '@/web/theme/ThemeProviderClient' // MUI + Emotion provider
 
 // Provide default metadata (title/description).
@@ -64,16 +65,17 @@ export default async function RootLayout({children}: RootLayoutProps): Promise<R
     // - lang/dir for accessibility and correct rendering.
     // - suppressHydrationWarning helps when the client theme might differ slightly on hydration.
     return (
-        <html lang="en" dir="ltr" suppressHydrationWarning>
+        <html lang="en" dir="ltr">
         <head>
-            {/* Expose CSP nonce for libraries (e.g., Emotion) that read it from DOM */}
-            {nonce ? <meta name="csp-nonce" content={nonce}/> : null}
-            {/* Keep <head> minimal; prefer Metadata/Viewport APIs or route-level metadata. */}
-            <title></title>
+            {/* CSP nonce for Emotion/MUI */}
+            {nonce ? <meta name="csp-nonce" content={nonce} /> : null}
+            {/* Stable insertion point for Emotion CSS */}
+            <meta name="emotion-insertion-point" content="emotion-insertion-point" />
         </head>
-        <body data-theme="light">
-        {/* Pass CSP nonce to client-side ThemeProvider so Emotion/MUI can attach it to style tags */}
-        <ThemeProviderClient nonce={nonce}>{children}</ThemeProviderClient>
+        <body data-theme="light" suppressHydrationWarning>
+        <ThemeRegistry options={{key: 'mui', nonce}}>
+            <ThemeProviderClient>{children}</ThemeProviderClient>
+        </ThemeRegistry>
         </body>
         </html>
     )
