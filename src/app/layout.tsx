@@ -26,6 +26,7 @@ import type {ReactNode} from 'react' // Children typing
 import React from 'react' // Enable JSX and types
 import {headers} from 'next/headers' // Server-side request headers accessor
 import type {Metadata, Viewport} from 'next' // Metadata + Viewport APIs
+import ThemeRegistry from '@/app/ThemeRegistry';
 import ThemeProviderClient from '@/web/theme/ThemeProviderClient' // MUI + Emotion provider
 
 // Provide default metadata (title/description).
@@ -50,34 +51,32 @@ type RootLayoutProps = Readonly<{
     children: ReactNode
 }>
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+// Server Component — use async to support environments where headers() returns a Promise.
+export default async function RootLayout({children}: RootLayoutProps): Promise<React.ReactElement> {
+    // Await per-request headers to avoid "Property 'get' does not exist on type Promise<ReadonlyHeaders>"
+    const readOnlyHeaders = await headers()
+
+    // Extract CSP nonce from middleware; treat empty as undefined.
+    const rawNonce = readOnlyHeaders.get('x-csp-nonce')
+    const nonce: string | undefined =
+        typeof rawNonce === 'string' && rawNonce.trim().length > 0 ? rawNonce : undefined
+
+    // Global HTML structure:
+    // - lang/dir for accessibility and correct rendering.
+    // - suppressHydrationWarning helps when the client theme might differ slightly on hydration.
     return (
-        <html lang="en">
+        <html lang="en" dir="ltr">
         <head>
-            {/* Critical inline script to set initial theme BEFORE React mounts */}
-            <script
-                dangerouslySetInnerHTML={{
-                    __html: `(function () {
-  try {
-    var stored = null;
-    try { stored = localStorage.getItem('theme'); } catch (e) {}
-    if (stored === 'dark' || stored === 'light') {
-      document.documentElement.setAttribute('data-theme', stored);
-    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-  } catch (err) {}
-})();`,
-                }}
-            />
-            {/* other head tags like meta, link, etc */}
+            {/* CSP nonce for Emotion/MUI */}
+            {nonce ? <meta name="csp-nonce" content={nonce} /> : null}
+            {/* Stable insertion point for Emotion CSS */}
+            <meta name="emotion-insertion-point" content="emotion-insertion-point" />
         </head>
-        <body>
-        {/* ThemeProviderClient should be mounted under the root so its initial render matches data-theme */}
-        <ThemeProviderClient>{children}</ThemeProviderClient>
+        <body data-theme="light" suppressHydrationWarning>
+        <ThemeRegistry options={{key: 'mui', nonce}}>
+            <ThemeProviderClient>{children}</ThemeProviderClient>
+        </ThemeRegistry>
         </body>
         </html>
-    );
+    )
 }

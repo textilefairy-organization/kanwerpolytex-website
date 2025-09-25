@@ -62,5 +62,9 @@ export default function createEmotionCache(nonce?: string): EmotionCache {
         key: MUI_EMOTION_CACHE_KEY,
         nonce: safeNonce,
         prepend: true,
+        insertionPoint:
+            typeof document !== 'undefined'
+                ? document.querySelector<HTMLMetaElement>('meta[name="emotion-insertion-point"]') ?? undefined
+                : undefined,
     })
 }

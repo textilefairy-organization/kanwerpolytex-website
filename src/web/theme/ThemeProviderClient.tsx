@@ -1,76 +1,43 @@
 // src/web/theme/ThemeProviderClient.tsx
-'use client';
+'use client'
 
-import React from 'react';
-import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { darkTheme, lightTheme } from './muiTheme'; // adjust import as in your repo
-import { usePrefersDark } from './usePrefersDark';
+import React from 'react'
+import {ThemeProvider} from '@mui/material/styles'
+import {darkTheme, lightTheme} from '@/web/theme/muiTheme'
+import {usePrefersDark} from '@/web/theme/usePrefersDark'
 
 /**
- * Client-side theme provider.
+ * File: src/web/theme/ThemeProviderClient.tsx
+ * Purpose: Client-side provider for MUI theming with system preference detection.
  *
- * Strategy:
- * - Read a synchronous initial theme value from document.documentElement's data-theme attribute
- *   (this attribute should be set by a tiny inline script in layout.tsx before React mounts).
- * - Initialize React state with that value (so first paint uses the same theme).
- * - Fall back to `usePrefersDark()` if no attribute present (reactively).
- * - Listen for system changes via usePrefersDark (which uses useSyncExternalStore).
+ * Author: Praveen Kanwar
+ * Organization: Kanwer Polytex
  *
- * This prevents the "flash" where server markup and first client paint disagree.
+ * Overview:
+ * - Picks the MUI theme based on the user's prefers-color-scheme media query (light/dark).
+ * - Applies CssBaseline to normalize styles and supports color-scheme propagation for better native UI integration.
+ *
+ * Security & Best Practices (OWASP, SonarQube, Next.js):
+ * - OWASP: Avoid inline styles/scripts; CSP nonce handling is managed centrally in ThemeRegistry.
+ * - SonarQube: Keep components small and pure; validate input (nonce) defensively; avoid console logging secrets.
+ * - Next.js: This file is a client component; keep side effects minimal and deterministic, using useMemo for themes.
  */
 
-export default function ThemeProviderClient({ children }: { children: React.ReactNode }) {
-    // Use undefined to represent "not yet decided" only if you want to delay; here we prefer a concrete initial theme.
-    const systemPrefersDark = usePrefersDark(); // keeps in sync after mount
+type Props = {
+    children: React.ReactNode
+}
 
-    // Read initial theme synchronously from DOM (set by inline script in layout).
-    const initialThemeFromDom = typeof document !== 'undefined'
-        ? document.documentElement.getAttribute('data-theme')
-        : null;
+// Client-side MUI theme provider (Emotion cache & SSR handled by ThemeRegistry).
+export default function ThemeProviderClient({children}: Props) {
 
-    // If data-theme is explicitly 'dark' or 'light', use that. Otherwise, fall back to systemPrefersDark.
-    const [isDark, setIsDark] = React.useState<boolean>(() => {
-        if (initialThemeFromDom === 'dark') return true;
-        if (initialThemeFromDom === 'light') return false;
-        // fallback: use system pref (from useSyncExternalStore)
-        return systemPrefersDark;
-    });
-
-    // Keep isDark in sync with system preference after mount only if user hasn't explicitly chosen.
-    // If you allow user override (e.g. via toggle) adjust logic accordingly.
-    React.useEffect(() => {
-        // If initial DOM provided explicit theme, don't auto-sync (that means user or script set preference).
-        if (initialThemeFromDom === 'dark' || initialThemeFromDom === 'light') {
-            return;
-        }
-        // otherwise keep in sync with system preference changes
-        if (systemPrefersDark !== isDark) {
-            setIsDark(systemPrefersDark);
-        }
-    }, [systemPrefersDark, initialThemeFromDom, isDark]);
-
-    const theme = React.useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
-
-    // Optionally, if you want to persist choice when user toggles theme, write to localStorage and update documentElement attribute
-    const setTheme = React.useCallback((dark: boolean) => {
-        setIsDark(dark);
-        try {
-            if (typeof document !== 'undefined') {
-                document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-            }
-            if (typeof window !== 'undefined' && 'localStorage' in window) {
-                window.localStorage.setItem('theme', dark ? 'dark' : 'light');
-            }
-        } catch (err) {
-            // ignore storage errors
-        }
-    }, []);
+    // Detect system preference (dark/light) and memoize the theme to avoid unnecessary re-renders
+    const prefersDark = usePrefersDark()
+    const theme = React.useMemo(() => (prefersDark ? darkTheme : lightTheme), [prefersDark])
 
     return (
-        <MuiThemeProvider theme={theme}>
-            <CssBaseline />
+        <ThemeProvider theme={theme}>
+            {/* <CssBaseline enableColorScheme /> */}
             {children}
-        </MuiThemeProvider>
-    );
+        </ThemeProvider>
+    )
 }

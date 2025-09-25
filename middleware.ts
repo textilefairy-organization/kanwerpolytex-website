@@ -78,6 +78,8 @@ const ALLOWED_FONT_HOSTS: string[] = [
 
 const ALLOWED_CONNECT_HOSTS: string[] = [
     "'self'",
+    'ws:', // allow WebSocket schemes (useful during dev or live features)
+    'wss:', // secure WebSocket
     // Add your API endpoints/domains used by fetch/XHR/WebSocket:
     // 'https://api.example.com',
 ]
@@ -151,32 +153,22 @@ function applySecurityHeaders(res: NextResponse, cspValue: string, nonce: string
     // HSTS for 2 years plus preload (ensure HTTPS everywhere)
     res.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
 
-    // Least-privilege feature policy (Permissions-Policy)
+    // Least-privilege Permissions-Policy (remove deprecated/unsupported features)
     res.headers.set(
         'Permissions-Policy',
         [
             "accelerometer=()",
-            "ambient-light-sensor=()",
             "autoplay=()",
-            "battery=()",
             "camera=()",
-            "display-capture=()",
-            "document-domain=()",
-            "encrypted-media=()",
-            "fullscreen=(self)", // allow same-origin fullscreen only
+            "fullscreen=(self)",
             "geolocation=()",
             "gyroscope=()",
-            "hid=()",
-            "magnetometer=()",
             "microphone=()",
-            "midi=()",
             "payment=()",
             "picture-in-picture=(self)",
             "publickey-credentials-get=()",
             "screen-wake-lock=()",
-            "sync-xhr=()",
             "usb=()",
-            "vr=()",
             "xr-spatial-tracking=()",
         ].join(', ')
     )
