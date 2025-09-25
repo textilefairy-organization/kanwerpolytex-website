@@ -67,9 +67,9 @@ export default async function RootLayout({children}: RootLayoutProps): Promise<R
         <html lang="en" dir="ltr">
         <head>
             {/* CSP nonce for Emotion/MUI */}
-            {nonce ? <meta name="csp-nonce" content={nonce} /> : null}
+            {nonce ? <meta name="csp-nonce" content={nonce}/> : null}
             {/* Stable insertion point for Emotion CSS */}
-            <meta name="emotion-insertion-point" content="" />
+            <meta name="emotion-insertion-point" content=""/>
         </head>
         <body suppressHydrationWarning>
         <ThemeRegistry options={{key: 'mui', nonce}}>
